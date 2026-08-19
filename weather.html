@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Dedicated Live Weather App with city search, geolocation, 24-hr hourly slider, and 7-day extended forecasts." />
+  <title>PulseHub Weather • Real-Time Weather Application</title>
+  
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/navigation.css" />
+  <link rel="stylesheet" href="css/weather.css" />
+</head>
+<body>
+  <div class="ambient-bg" aria-hidden="true">
+    <div class="ambient-orb ambient-orb-1" style="background: #0284c7;"></div>
+    <div class="ambient-orb ambient-orb-2" style="background: #38bdf8;"></div>
+    <div class="ambient-orb ambient-orb-3" style="background: #6366f1;"></div>
+  </div>
+
+  <header class="site-header">
+    <div class="container nav-wrapper">
+      <a href="index.html" class="brand" aria-label="PulseHub Home">
+        <div class="brand-icon" style="background: var(--grad-weather);">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"></path>
+          </svg>
+        </div>
+        <span>Pulse<span class="text-gradient-weather">Weather</span></span>
+      </a>
+
+      <nav class="app-tabs" aria-label="Navigation Links">
+        <a href="index.html" class="tab-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+          Dashboard Hub
+        </a>
+        <a href="weather.html" class="tab-btn tab-weather active">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"></path></svg>
+          Weather App
+        </a>
+        <a href="movies.html" class="tab-btn tab-movies">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect><line x1="7" y1="2" x2="7" y2="22"></line><line x1="17" y1="2" x2="17" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line></svg>
+          Movie Search
+        </a>
+      </nav>
+
+      <div class="nav-actions">
+        <div class="unit-toggle" title="Switch Temperature Unit" aria-label="Unit Switcher">
+          <button type="button" class="unit-btn active" id="unit-c" aria-label="Celsius">°C</button>
+          <button type="button" class="unit-btn" id="unit-f" aria-label="Fahrenheit">°F</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container weather-section" id="weather-app-container">
+    <div style="text-align: center; margin-bottom: 2rem;">
+      <span class="badge badge-cyan" style="margin-bottom: 0.5rem;">Live Weather Intelligence</span>
+      <h1 style="font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 800; letter-spacing: -0.02em;">
+        Global Weather <span class="text-gradient-weather">Forecast &amp; Metrics</span>
+      </h1>
+      <p style="color: var(--text-secondary); max-width: 600px; margin: 0.4rem auto 0;">
+        Real-time atmospheric insights, 24-hour hourly trend slider, and 7-day extended forecasts powered by Open-Meteo REST APIs.
+      </p>
+    </div>
+
+    <div class="weather-search-wrapper">
+      <form class="weather-search-bar" id="weather-search-form" autocomplete="off">
+        <div class="search-input-box">
+          <input
+            type="text"
+            id="weather-search-input"
+            class="input-glass"
+            placeholder="Search city worldwide (e.g. Tokyo, Paris, New York, Mumbai)..."
+            aria-label="Search city"
+          />
+          <div class="input-icon-left">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </div>
+          <div class="search-suggestions" id="weather-suggestions"></div>
+        </div>
+
+        <button type="submit" class="btn btn-weather" id="weather-search-btn" aria-label="Search">
+          <span>Search</span>
+        </button>
+
+        <button type="button" class="btn btn-glass btn-icon" id="weather-geo-btn" title="Use My Current Location" aria-label="Use Current Location">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="3 11 22 2 13 21 11 13 3 11"></polygon>
+          </svg>
+        </button>
+      </form>
+
+      <div class="recent-searches">
+        <span class="recent-label">Recent:</span>
+        <div id="recent-searches-list" style="display: flex; gap: 0.5rem; flex-wrap: wrap;"></div>
+      </div>
+    </div>
+
+    <div id="weather-skeleton" class="hidden" style="margin-bottom: 2rem;">
+      <div class="weather-grid">
+        <div class="skeleton" style="height: 380px; border-radius: var(--radius-lg);"></div>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+          <div class="skeleton" style="height: 110px;"></div>
+          <div class="skeleton" style="height: 110px;"></div>
+          <div class="skeleton" style="height: 110px;"></div>
+          <div class="skeleton" style="height: 110px;"></div>
+          <div class="skeleton" style="height: 110px;"></div>
+          <div class="skeleton" style="height: 110px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="weather-error-container" class="state-container hidden">
+      <div class="state-icon error">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+      </div>
+      <h3 class="state-title">Location Not Found</h3>
+      <p class="state-desc" id="weather-error-text">Please check the city spelling and try searching again.</p>
+    </div>
+
+    <div id="weather-content-area" class="fade-in">
+      <div class="weather-grid">
+        <div class="glass-card weather-hero-card" id="weather-hero-card">
+          <div class="hero-header">
+            <div class="hero-location-wrap">
+              <div class="hero-city">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="color: #38bdf8;">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                  <circle cx="12" cy="10" r="3"></circle>
+                </svg>
+                <span id="weather-city-name">London, United Kingdom</span>
+              </div>
+              <span class="hero-date" id="weather-date-text">Tue, Aug 18 • Local Time</span>
+            </div>
+            <span class="badge badge-cyan" id="weather-condition-badge">Clear Sky</span>
+          </div>
+
+          <div class="hero-center">
+            <div class="hero-temp-group">
+              <div>
+                <span class="hero-temp-number" id="weather-temp-number">24</span>
+                <span class="hero-temp-unit" id="weather-temp-unit">°C</span>
+              </div>
+              <span class="hero-feels-like" id="weather-feels-like">Feels like 23°C</span>
+            </div>
+            <div class="hero-illustration" id="weather-illustration" aria-hidden="true"></div>
+          </div>
+
+          <div class="hero-footer">
+            <div class="hero-high-low">
+              <span id="weather-temp-high" class="temp-high">↑ 26°C</span>
+              <span id="weather-temp-low" class="temp-low">↓ 18°C</span>
+            </div>
+            <span style="font-size: 0.85rem; color: var(--text-muted);">Real-time Synced</span>
+          </div>
+        </div>
+
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-header">
+              <span class="metric-title">Humidity</span>
+              <svg class="metric-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>
+              </svg>
+            </div>
+            <div class="metric-value" id="metric-humidity">45%</div>
+            <div class="metric-sub">Relative moisture</div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-header">
+              <span class="metric-title">Wind Speed</span>
+              <svg class="metric-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"></path>
+              </svg>
+            </div>
+            <div class="metric-value" id="metric-wind">14 km/h</div>
+            <div class="metric-sub">Surface wind velocity</div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-header">
+              <span class="metric-title">Pressure</span>
+              <svg class="metric-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="m16 12-4-4-4 4M12 16V8"></path>
+              </svg>
+            </div>
+            <div class="metric-value" id="metric-pressure">1012 hPa</div>
+            <div class="metric-sub">Atmospheric level</div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-header">
+              <span class="metric-title">Precipitation</span>
+              <svg class="metric-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="8" y1="19" x2="8" y2="21"></line>
+                <line x1="8" y1="13" x2="8" y2="15"></line>
+                <line x1="16" y1="19" x2="16" y2="21"></line>
+                <line x1="16" y1="13" x2="16" y2="15"></line>
+                <line x1="12" y1="21" x2="12" y2="23"></line>
+                <line x1="12" y1="15" x2="12" y2="17"></line>
+                <path d="M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25"></path>
+              </svg>
+            </div>
+            <div class="metric-value" id="metric-precipitation">10%</div>
+            <div class="metric-sub">Rain probability</div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-header">
+              <span class="metric-title">Sunrise</span>
+              <svg class="metric-icon" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2">
+                <path d="M12 2v6M4.93 10.93l4.24-4.24M2 18h20M20 18a8 8 0 0 0-16 0"></path>
+              </svg>
+            </div>
+            <div class="metric-value" id="metric-sunrise">05:52 AM</div>
+            <div class="metric-sub">Morning twilight</div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-header">
+              <span class="metric-title">Sunset</span>
+              <svg class="metric-icon" viewBox="0 0 24 24" fill="none" stroke="#fb7185" stroke-width="2">
+                <path d="M12 10V2M4.93 10.93l4.24-4.24M2 18h20M20 18a8 8 0 0 0-16 0"></path>
+              </svg>
+            </div>
+            <div class="metric-value" id="metric-sunset">08:15 PM</div>
+            <div class="metric-sub">Evening twilight</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 2rem;">
+        <h3 class="forecast-section-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+          24-Hour Hourly Forecast
+        </h3>
+        <div class="hourly-slider-container">
+          <div class="hourly-slider" id="hourly-forecast-slider"></div>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 2rem;">
+        <h3 class="forecast-section-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+          7-Day Forecast
+        </h3>
+        <div class="daily-forecast-grid" id="daily-forecast-list"></div>
+      </div>
+    </div>
+  </main>
+
+  <footer style="border-top: 1px solid var(--border-subtle); padding: 2.5rem 0; margin-top: 4rem; text-align: center;">
+    <div class="container">
+      <p style="font-size: 0.9rem; color: var(--text-muted);">
+        Minor Project 03 • Weather Application • Open-Meteo REST API
+      </p>
+    </div>
+  </footer>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
